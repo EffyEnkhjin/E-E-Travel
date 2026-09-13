@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>广东·香港·潮汕 · 9日行</title>
+<style>
+  :root{
+    --serif: "Songti SC","STSong","SimSun",serif;
+    --sans: "PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;
+    --gz: #B0472E;   /* 广州段 - 西关红砖 */
+    --hk: #2B5876;   /* 香港段 - 港湾靛蓝 */
+    --cs: #3F7D5C;   /* 潮汕段 - 茶山绿 */
+    --transit:#8A6A45;
+    --radius: 3px;
+  }
+  html[data-theme="day"]{
+    --bg:#F1ECE0;
+    --bg-card:#FBF8F1;
+    --ink:#2B241C;
+    --ink-soft:#6B6053;
+    --line:#D8CFBC;
+    --accent:#B0472E;
+    --warn-bg:#F7E4DA;
+    --warn-ink:#8A3520;
+    --shadow: 0 1px 0 rgba(43,36,28,.08);
+  }
+  html[data-theme="night"]{
+    --bg:#14181A;
+    --bg-card:#1D2225;
+    --ink:#E9E3D6;
+    --ink-soft:#9A9184;
+    --line:#333A3D;
+    --accent:#E08A6E;
+    --warn-bg:#2E211B;
+    --warn-ink:#E3A487;
+    --shadow: 0 1px 0 rgba(0,0,0,.3);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--sans); line-height:1.55;
+    transition:background .4s ease,color .4s ease;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  a{color:inherit;}
+  .wrap{max-width:640px; margin:0 auto; padding:0 18px;}
+  h1,h2,h3{font-family:var(--serif); font-weight:600; letter-spacing:.02em;}
+  .section-title{
+    font-size:20px; margin:40px 0 14px; padding-bottom:8px;
+    border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:10px;
+  }
+  .section-title .sub{font-family:var(--sans); font-size:12px; color:var(--ink-soft); font-weight:400;}
+
+  /* ---------- 此刻关注 ---------- */
+  .focus{
+    margin-top:22px; background:var(--bg-card); border:1px solid var(--line);
+    border-radius:8px; padding:22px 22px 20px; box-shadow:var(--shadow);
+  }
+  .focus .eyebrow{font-size:13px; color:var(--ink-soft);}
+  .focus .event-title{font-family:var(--serif); font-size:22px; margin:6px 0 2px;}
+  .focus .event-place{font-size:13px; color:var(--ink-soft); margin-bottom:16px;}
+  .countdown{display:flex; gap:14px;}
+  .countdown .cell{flex:1; text-align:center;}
+  .countdown .num{
+    font-family:var(--serif); font-size:32px; font-variant-numeric:tabular-nums;
+    background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px 0;
+  }
+  .countdown .lbl{font-size:11px; color:var(--ink-soft); margin-top:4px;}
+  .focus .tz-note{font-size:11px; color:var(--ink-soft); margin-top:14px;}
+
+  /* ---------- 地图 ---------- */
+  .map-box{background:var(--bg-card); border:1px solid var(--line); border-radius:8px; padding:10px 6px 4px; box-shadow:var(--shadow);}
+  .map-legend{display:flex; flex-wrap:wrap; gap:10px 16px; padding:10px 14px 4px; font-size:12px; color:var(--ink-soft);}
+  .map-legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+
+  /* ---------- 已确认信息卡 ---------- */
+  .card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:8px;
+    padding:14px 16px; margin-bottom:10px; box-shadow:var(--shadow);
+  }
+  .card .row{display:flex; justify-content:space-between; gap:10px; font-size:14px; margin:3px 0;}
+  .card .row .k{color:var(--ink-soft); flex-shrink:0;}
+  .card .row .v{text-align:right;}
+  .card .title{font-family:var(--serif); font-size:16px; margin-bottom:6px;}
+  .navlink{
+    display:inline-block; margin-top:8px; font-size:12px; color:var(--accent);
+    border:1px solid var(--accent); border-radius:20px; padding:3px 11px; text-decoration:none;
+  }
+
+  /* ---------- 逐日行程 ---------- */
+  .day{border-top:1px solid var(--line); padding:16px 0;}
+  .day-head{display:flex; align-items:center; justify-content:space-between; cursor:pointer;}
+  .day-head-left{display:flex; align-items:center; gap:10px;}
+  .day-badge{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--serif); font-size:13px; color:#fff;
+  }
+  .day-date{font-family:var(--serif); font-size:17px;}
+  .day-city{font-size:12px; color:var(--ink-soft);}
+  .day-toggle{font-size:12px; color:var(--ink-soft);}
+  .day-stops{margin-top:14px; display:none;}
+  .day.open .day-stops{display:block;}
+  .stop{display:flex; gap:14px; padding:8px 0;}
+  .stop .time{width:64px; flex-shrink:0; font-size:12px; color:var(--ink-soft); padding-top:2px;}
+  .stop .content{flex:1; border-left:2px solid var(--line); padding-left:14px; position:relative;}
+  .stop .content::before{
+    content:""; position:absolute; left:-5px; top:5px; width:8px; height:8px;
+    border-radius:50%; background:var(--dot-color, var(--accent));
+  }
+  .stop .name{font-size:14.5px; font-weight:600;}
+  .stop .note{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+  .stop .book-flag{
+    display:inline-block; font-size:11px; color:var(--warn-ink); background:var(--warn-bg);
+    border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:1px;
+  }
+  .stop-navlink{font-size:11.5px; color:var(--accent); text-decoration:none; margin-left:6px; white-space:nowrap;}
+  .overnight{
+    margin-top:12px; font-size:12.5px; color:var(--ink-soft);
+    border-top:1px dashed var(--line); padding-top:10px;
+  }
+  .daymap-btn{
+    margin-top:12px; font-size:12px; padding:6px 12px; border-radius:20px;
+    border:1px solid var(--line); background:transparent; color:var(--ink); cursor:pointer;
+  }
+
+  /* ---------- 待办 ---------- */
+  .todo-list{list-style:none; padding:0; margin:0;}
+  .todo-list li{
+    padding:10px 0; border-bottom:1px solid var(--line); font-size:14px; display:flex; gap:10px;
+  }
+  .todo-list li .mark{color:var(--accent); flex-shrink:0;}
+  .todo-list li.risk{color:var(--warn-ink);}
+
+  /* ---------- 贴士 ---------- */
+  .tips-list{padding-left:0; list-style:none; margin:0;}
+  .tips-list li{font-size:14px; padding:9px 0; border-bottom:1px dashed var(--line);}
+  .tips-list li:last-child{border-bottom:none;}
+
+  /* ---------- 记账 ---------- */
+  .expense-box{margin-top:14px; border-top:1px dashed var(--line); padding-top:10px;}
+  .expense-box .expense-hd{font-size:12px; color:var(--ink-soft); margin-bottom:4px;}
+  .expense-row{display:flex; justify-content:space-between; font-size:13px; padding:3px 0;}
+  .expense-row .item{color:var(--ink);}
+  .expense-row .amt{font-variant-numeric:tabular-nums; color:var(--ink-soft);}
+  .expense-empty{font-size:12px; color:var(--ink-soft);}
+  .day-subtotal{font-size:12px; color:var(--accent); margin-top:6px; font-weight:600;}
+
+  .summary-card{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:8px;
+    padding:18px 20px; box-shadow:var(--shadow);
+  }
+  .summary-row{display:flex; justify-content:space-between; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--line);}
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .lbl{font-size:13px; color:var(--ink-soft);}
+  .summary-row .val{font-family:var(--serif); font-size:20px;}
+  .summary-note{font-size:11.5px; color:var(--ink-soft); margin-top:10px;}
+
+  footer{text-align:center; font-size:11px; color:var(--ink-soft); margin-top:50px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 1. 此刻关注 -->
+  <div class="focus" id="focus">
+    <div class="eyebrow">此刻关注</div>
+    <div class="event-title" id="focus-title">加载中…</div>
+    <div class="event-place" id="focus-place"></div>
+    <div class="countdown">
+      <div class="cell"><div class="num" id="cd-d">--</div><div class="lbl">天</div></div>
+      <div class="cell"><div class="num" id="cd-h">--</div><div class="lbl">时</div></div>
+      <div class="cell"><div class="num" id="cd-m">--</div><div class="lbl">分</div></div>
+      <div class="cell"><div class="num" id="cd-s">--</div><div class="lbl">秒</div></div>
+    </div>
+    <div class="tz-note">所有时间均为北京/香港时间（UTC+8）；无论你身处哪个时区打开本页，倒计时都会自动换算，不会算错。</div>
+  </div>
+
+  <!-- 2. 行程总览地图 -->
+  <div class="section-title">行程总览<span class="sub">手绘线路 · 广州→香港→潮汕</span></div>
+  <div class="map-box">
+    <svg viewBox="0 0 600 260" width="100%" xmlns="http://www.w3.org/2000/svg" id="route-svg">
+      <defs>
+        <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02 0.06" numOctaves="2" seed="7" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="6"/>
+        </filter>
+      </defs>
+      <!-- 上海（出发，虚线示意，不计入核心行程） -->
+      <text x="30" y="34" font-family="Songti SC, serif" font-size="12" fill="var(--ink-soft)">上海</text>
+      <path d="M55,40 L120,95" stroke="var(--ink-soft)" stroke-width="1.4" stroke-dasharray="3 5" fill="none" filter="url(#rough)"/>
+      <text x="60" y="66" font-family="PingFang SC" font-size="9" fill="var(--ink-soft)">✈ 9/27 08:20</text>
+
+      <!-- 广州 -->
+      <circle cx="120" cy="100" r="7" fill="var(--gz)"/>
+      <text x="100" y="128" font-family="Songti SC, serif" font-size="15" fill="var(--ink)">广州</text>
+      <text x="86" y="144" font-family="PingFang SC" font-size="10" fill="var(--ink-soft)">9/27–29 · voco十甫</text>
+
+      <!-- 广州→香港 -->
+      <path d="M126,104 C 190,150 250,150 300,150" stroke="var(--gz)" stroke-width="3" fill="none" filter="url(#rough)" stroke-linecap="round"/>
+      <text x="185" y="175" font-family="PingFang SC" font-size="9" fill="var(--ink-soft)">高铁 · 票待购</text>
+
+      <!-- 香港 -->
+      <circle cx="310" cy="150" r="7" fill="var(--hk)"/>
+      <text x="290" y="178" font-family="Songti SC, serif" font-size="15" fill="var(--ink)">香港</text>
+      <text x="270" y="194" font-family="PingFang SC" font-size="10" fill="var(--ink-soft)">9/29–10/1 · 铜锣湾皇冠假日</text>
+
+      <!-- 香港→潮汕：国庆首日，重点提示 -->
+      <path d="M316,154 C 380,190 430,190 470,150" stroke="var(--hk)" stroke-width="3" fill="none" filter="url(#rough)" stroke-linecap="round" stroke-dasharray="1 9"/>
+      <text x="360" y="215" font-family="PingFang SC" font-size="9" fill="var(--warn-ink, #8A3520)">⚠ 10/1 国庆首日出发，票待购</text>
+
+      <!-- 潮汕 -->
+      <circle cx="480" cy="140" r="7" fill="var(--cs)"/>
+      <text x="460" y="118" font-family="Songti SC, serif" font-size="15" fill="var(--ink)">潮汕</text>
+      <text x="430" y="102" font-family="PingFang SC" font-size="10" fill="var(--ink-soft)">10/1–10/5 · 住宿待定</text>
+
+      <!-- 潮汕→杭州 -->
+      <path d="M486,134 L 550,80" stroke="var(--ink-soft)" stroke-width="1.4" stroke-dasharray="3 5" fill="none" filter="url(#rough)"/>
+      <text x="490" y="70" font-family="PingFang SC" font-size="9" fill="var(--ink-soft)">✈ 10/5 13:15</text>
+      <text x="552" y="60" font-family="Songti SC, serif" font-size="12" fill="var(--ink-soft)">杭州</text>
+    </svg>
+    <div class="map-legend">
+      <span><i class="dot" style="background:var(--gz)"></i>广州（2晚）</span>
+      <span><i class="dot" style="background:var(--hk)"></i>香港（2晚）</span>
+      <span><i class="dot" style="background:var(--cs)"></i>潮汕（4晚 · 住宿待定）</span>
+    </div>
+  </div>
+
+  <!-- 3. 已确认信息 -->
+  <div class="section-title">已确认信息</div>
+
+  <div class="card">
+    <div class="title">✈️ 去程 · 中国国航 CA8327</div>
+    <div class="row"><span class="k">09/27（周日）</span><span class="v">08:20 上海浦东 T2 起飞</span></div>
+    <div class="row"><span class="k"></span><span class="v">10:25 广州白云 T3 到达</span></div>
+  </div>
+
+  <div class="card">
+    <div class="title">✈️ 返程 · 南方航空 CZ5107</div>
+    <div class="row"><span class="k">10/05（周一）</span><span class="v">13:15 揭阳潮汕 起飞</span></div>
+    <div class="row"><span class="k"></span><span class="v">15:05 杭州萧山 T4 到达</span></div>
+  </div>
+
+  <div class="card">
+    <div class="title">🏨 voco 广州十甫酒店</div>
+    <div class="row"><span class="k">入住</span><span class="v">09/27 → 09/29（2晚）</span></div>
+    <div class="row"><span class="k">地址</span><span class="v">广州市荔湾区第十甫路188号</span></div>
+    <div class="row"><span class="k">电话</span><span class="v"><a href="tel:02086007566">020-86007566</a></span></div>
+    <a class="navlink" href="https://uri.amap.com/search?keyword=voco%E5%B9%BF%E5%B7%9E%E5%8D%81%E7%94%AB%E9%85%92%E5%BA%97&src=triphtml" target="_blank">高德导航</a>
+  </div>
+
+  <div class="card">
+    <div class="title">🏨 Crowne Plaza 香港铜锣湾皇冠假日酒店</div>
+    <div class="row"><span class="k">入住</span><span class="v">09/29 → 10/01（2晚）</span></div>
+    <div class="row"><span class="k">地址</span><span class="v">香港湾仔区铜锣湾礼顿道8号</span></div>
+    <div class="row"><span class="k">电话</span><span class="v"><a href="tel:+85239803980">+852 3980 3980</a></span></div>
+    <a class="navlink" href="https://uri.amap.com/search?keyword=%E9%A6%99%E6%B8%AF%E9%93%9C%E9%94%A3%E6%B9%BE%E7%9A%87%E5%86%A0%E5%81%87%E6%97%A5%E9%85%92%E5%BA%97&src=triphtml" target="_blank">高德导航</a>
+  </div>
+
+  <div class="card" style="border-color:var(--warn-ink);">
+    <div class="title">🏨 潮汕住宿</div>
+    <div class="row"><span class="k">状态</span><span class="v" style="color:var(--warn-ink)">暂定，尚未预订</span></div>
+  </div>
+
+  <!-- 4. 逐日行程 -->
+  <div class="section-title">逐日行程<span class="sub">点开每天可展开</span></div>
+  <div id="days"></div>
+
+  <!-- 记账汇总 -->
+  <div class="section-title">记账汇总<span class="sub">2人平摊 · 人民币 + 港币分开算</span></div>
+  <div class="summary-card">
+    <div class="summary-row"><span class="lbl">总支出（人民币）</span><span class="val" id="sum-cny">¥0</span></div>
+    <div class="summary-row"><span class="lbl">总支出（港币）</span><span class="val" id="sum-hkd">HK$0</span></div>
+    <div class="summary-row"><span class="lbl">人均（人民币）</span><span class="val" id="sum-cny-pp">¥0</span></div>
+    <div class="summary-row"><span class="lbl">人均（港币）</span><span class="val" id="sum-hkd-pp">HK$0</span></div>
+    <div class="summary-note">港币未换算成人民币（汇率会波动），两项分开累计；具体某笔消费记在哪一天，见上面各天行程里的"记账"。</div>
+  </div>
+
+  <!-- 5. 待办清单 -->
+  <div class="section-title">待办清单<span class="sub">办完一项，告诉我，我来改这页</span></div>
+  <ul class="todo-list">
+    <li class="risk"><span class="mark">●</span>香港→潮汕大交通票：撞国庆假期第一天（10/1），全年最堵，开票后第一时间抢</li>
+    <li class="risk"><span class="mark">●</span>潮汕住宿：尽快确定并预订，黄金周房价/房量会持续收紧</li>
+    <li><span class="mark">●</span>广州→香港高铁票：目前未开售，需持续关注开票时间并尽快购买</li>
+    <li><span class="mark">●</span>广东省博物馆（9/27参观）：提前在"广东省博物馆"公众号做实名预约</li>
+    <li><span class="mark">●</span>广州塔门票：提前至少1天在官网/购票平台预约分时段票</li>
+    <li><span class="mark">●</span>确认9/28"植物园"具体指华南植物园还是云台花园（路线、门票不同）</li>
+    <li><span class="mark">●</span>补充9/30香港当天的逐日行程</li>
+    <li><span class="mark">●</span>补充10/2–10/4潮汕逐日行程</li>
+    <li><span class="mark">●</span>如有已订的门票/餐厅/租车，发给我补进"已确认信息"</li>
+  </ul>
+
+  <!-- 6. 实用贴士 -->
+  <div class="section-title">实用贴士</div>
+  <ul class="tips-list">
+    <li>本次行程横跨中秋假期尾声（9/27）与国庆黄金周（10/1起），10/1当天跨境交通预计是全年最拥堵的一天，务必预留缓冲时间。</li>
+    <li>往来香港需要港澳通行证及有效签注，出发前请确认签注次数/有效期足够。</li>
+    <li>高德地图在香港部分区域的路线规划不如内地完善，建议同时备好谷歌地图或港铁App。</li>
+    <li>香港支付以八达通、信用卡为主，微信/支付宝在港消费需提前确认已开通对应功能。</li>
+    <li>9月底10月初广东沿海仍有台风/暴雨概率，出发前3天留意天气与航班动态。</li>
+    <li>国庆假期热门餐厅建议提前在美团/大众点评订位，避免现场久等。</li>
+  </ul>
+
+  <footer>广东 · 香港 · 潮汕 · 9天2人行</footer>
+</div>
+
+<script>
+/* ============ 数据 ============ */
+// 所有时间均为 ISO 字符串并显式带 +08:00（北京/香港时间），
+// 保证无论访问者所在时区如何，倒计时与显示都以此为准。
+const EVENTS = [
+  { time:"2026-09-27T08:20:00+08:00", title:"CA8327 起飞", place:"上海浦东机场 T2 → 广州白云 T3" },
+  { time:"2026-09-27T10:25:00+08:00", title:"CA8327 到达广州", place:"广州白云机场 T3" },
+  { time:"2026-09-29T12:00:00+08:00", title:"voco广州十甫酒店 参考退房", place:"标准退房12:00，以实际为准" },
+  { time:"2026-09-29T15:00:00+08:00", title:"Crowne Plaza 香港 参考入住", place:"标准入住15:00，以实际为准" },
+  { time:"2026-10-01T12:00:00+08:00", title:"Crowne Plaza 香港 参考退房 · 出发去潮汕", place:"⚠ 国庆假期第一天，跨境交通最拥堵" },
+  { time:"2026-10-05T13:15:00+08:00", title:"CZ5107 起飞", place:"揭阳潮汕机场 → 杭州萧山 T4" },
+  { time:"2026-10-05T15:05:00+08:00", title:"CZ5107 到达杭州", place:"杭州萧山机场 T4 · 旅程结束" }
+];
+
+// 记账：每天一个 expenses 数组，元素形如 {item:"名称", amount:35, currency:"CNY"}
+// currency 只用 "CNY" 或 "HKD"。发生消费后告诉我，我加到对应天里即可。
+const DAYS = [
+  { date:"09/27", weekday:"周日", city:"广州", color:"var(--gz)",
+    overnight:"住：voco 广州十甫酒店",
+    expenses:[],
+    stops:[
+      {time:"10:25", name:"广州白云机场落地", note:"CA8327到达后出关取行李，前往市区约40–60分钟", kw:"广州白云国际机场"},
+      {time:"中午", name:"沙面岛", note:"欧陆建筑与老榕树", kw:"沙面岛"},
+      {time:"下午", name:"西关骑楼老街 · 上下九", note:"紧邻酒店，逛老字号小吃", kw:"上下九步行街"},
+      {time:"下午", name:"广东省博物馆", note:"需提前在公众号\"广东省博物馆\"实名预约，16:00停止入场，建议约13:00–14:00档", kw:"广东省博物馆", book:true},
+      {time:"晚上", name:"广州塔", note:"需提前≥1天在官网/购票平台买分时段票，建议傍晚/夜景场", kw:"广州塔", book:true}
+    ]},
+  { date:"09/28", weekday:"周一", city:"广州", color:"var(--gz)",
+    overnight:"住：voco 广州十甫酒店",
+    expenses:[],
+    stops:[
+      {time:"上午", name:"惠吉西", note:"", kw:"惠吉西路"},
+      {time:"上午", name:"陈家祠", note:"2026年闭馆日已改为周二，周一正常开放", kw:"陈家祠"},
+      {time:"下午", name:"植物园", note:"待确认：华南植物园 or 云台花园？两者路线门票不同", kw:"华南植物园", book:true}
+    ]},
+  { date:"09/29", weekday:"周二", city:"广州 → 香港", color:"var(--gz)",
+    overnight:"住：Crowne Plaza 香港铜锣湾皇冠假日酒店",
+    expenses:[],
+    stops:[
+      {time:"上午", name:"石室圣心大教堂", note:"", kw:"石室圣心大教堂"},
+      {time:"上午", name:"永庆坊", note:"", kw:"永庆坊"},
+      {time:"下午", name:"高铁赴香港", note:"车票尚未开售/购买，需持续关注开票并尽快购票", book:true}
+    ]},
+  { date:"09/30", weekday:"周三", city:"香港", color:"var(--hk)",
+    overnight:"住：Crowne Plaza 香港铜锣湾皇冠假日酒店",
+    expenses:[],
+    stops:[
+      {time:"全天", name:"香港行程尚未提供", note:"发给我之后补上", pending:true}
+    ]},
+  { date:"10/01", weekday:"周四 · 国庆", color:"var(--hk)", city:"香港 → 潮汕",
+    overnight:"住：潮汕（住宿待定）",
+    expenses:[],
+    stops:[
+      {time:"中午前", name:"Crowne Plaza 退房", note:"标准退房12:00，以实际为准"},
+      {time:"?", name:"香港 → 潮汕 大交通", note:"⚠ 国庆假期第一天，全年最堵；票尚未购买，开票后第一时间抢", book:true, risk:true}
+    ]},
+  { date:"10/02", weekday:"周五 · 国庆", city:"潮汕", color:"var(--cs)",
+    overnight:"住：潮汕（住宿待定）",
+    expenses:[],
+    stops:[{time:"全天", name:"潮汕行程尚未提供", note:"发给我之后补上", pending:true}]},
+  { date:"10/03", weekday:"周六 · 国庆", city:"潮汕", color:"var(--cs)",
+    overnight:"住：潮汕（住宿待定）",
+    expenses:[],
+    stops:[{time:"全天", name:"潮汕行程尚未提供", note:"发给我之后补上", pending:true}]},
+  { date:"10/04", weekday:"周日 · 国庆", city:"潮汕", color:"var(--cs)",
+    overnight:"住：潮汕（住宿待定）",
+    expenses:[],
+    stops:[{time:"全天", name:"潮汕行程尚未提供", note:"发给我之后补上", pending:true}]},
+  { date:"10/05", weekday:"周一 · 国庆", city:"潮汕 → 杭州", color:"var(--cs)",
+    overnight:"—",
+    expenses:[],
+    stops:[
+      {time:"13:15", name:"CZ5107 起飞", note:"揭阳潮汕机场"},
+      {time:"15:05", name:"CZ5107 到达", note:"杭州萧山机场T4，旅程结束"}
+    ]}
+];
+
+/* ============ 日夜配色 ============ */
+function applyTheme(){
+  const h = new Date().getHours();
+  const theme = (h>=6 && h<18) ? "day" : "night";
+  document.documentElement.setAttribute("data-theme", theme);
+}
+applyTheme();
+setInterval(applyTheme, 60000);
+
+/* ============ 此刻关注 / 倒计时 ============ */
+function fmt2(n){ return String(n).padStart(2,"0"); }
+
+function pickEvent(){
+  const now = Date.now();
+  for(const e of EVENTS){
+    if(new Date(e.time).getTime() > now) return e;
+  }
+  return null; // 全部结束
+}
+
+function renderFocus(){
+  const titleEl = document.getElementById("focus-title");
+  const placeEl = document.getElementById("focus-place");
+  const ev = pickEvent();
+  if(!ev){
+    titleEl.textContent = "旅程已结束 · 期待下一次";
+    placeEl.textContent = "";
+    ["cd-d","cd-h","cd-m","cd-s"].forEach(id=>document.getElementById(id).textContent="--");
+    return;
+  }
+  titleEl.textContent = ev.title;
+  placeEl.textContent = ev.place;
+  const diff = new Date(ev.time).getTime() - Date.now();
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor(diff%86400000/3600000);
+  const m = Math.floor(diff%3600000/60000);
+  const s = Math.floor(diff%60000/1000);
+  document.getElementById("cd-d").textContent = d;
+  document.getElementById("cd-h").textContent = fmt2(h);
+  document.getElementById("cd-m").textContent = fmt2(m);
+  document.getElementById("cd-s").textContent = fmt2(s);
+}
+renderFocus();
+setInterval(renderFocus, 1000);
+
+/* ============ 逐日行程渲染 ============ */
+function amapSearch(name){
+  return "https://uri.amap.com/search?keyword=" + encodeURIComponent(name) + "&src=triphtml";
+}
+function amapRoute(fromName, toName){
+  return "https://uri.amap.com/navigation?from=&fromname=" + encodeURIComponent(fromName) +
+         "&to=&toname=" + encodeURIComponent(toName) +
+         "&mode=car&policy=1&src=triphtml&coordinate=gaode&callnative=1";
+}
+
+function fmtMoney(n){
+  return n.toLocaleString("zh-CN", {maximumFractionDigits:2});
+}
+
+function renderExpenseBox(expenses){
+  if(!expenses || expenses.length===0){
+    return `<div class="expense-box"><div class="expense-empty">暂无记账 · 有消费告诉我，我记到这天</div></div>`;
+  }
+  let cny=0, hkd=0;
+  const rows = expenses.map(e=>{
+    if(e.currency==="HKD") hkd+=e.amount; else cny+=e.amount;
+    const sign = e.currency==="HKD" ? "HK$" : "¥";
+    return `<div class="expense-row"><span class="item">${e.item}</span><span class="amt">${sign}${fmtMoney(e.amount)}</span></div>`;
+  }).join("");
+  const subtotalParts = [];
+  if(cny>0) subtotalParts.push("¥"+fmtMoney(cny));
+  if(hkd>0) subtotalParts.push("HK$"+fmtMoney(hkd));
+  return `<div class="expense-box">
+    <div class="expense-hd">记账</div>
+    ${rows}
+    <div class="day-subtotal">当日小计：${subtotalParts.join(" + ")}</div>
+  </div>`;
+}
+
+function renderSummary(){
+  let cny=0, hkd=0;
+  DAYS.forEach(day=>{
+    (day.expenses||[]).forEach(e=>{
+      if(e.currency==="HKD") hkd+=e.amount; else cny+=e.amount;
+    });
+  });
+  document.getElementById("sum-cny").textContent = "¥"+fmtMoney(cny);
+  document.getElementById("sum-hkd").textContent = "HK$"+fmtMoney(hkd);
+  document.getElementById("sum-cny-pp").textContent = "¥"+fmtMoney(cny/2);
+  document.getElementById("sum-hkd-pp").textContent = "HK$"+fmtMoney(hkd/2);
+}
+
+function renderDays(){
+  const wrap = document.getElementById("days");
+  DAYS.forEach((day, idx)=>{
+    const el = document.createElement("div");
+    el.className = "day";
+    el.id = "day-"+idx;
+
+    const namedStops = day.stops.filter(s=>!s.pending);
+    const multiBtn = namedStops.length>1
+      ? `<button class="daymap-btn" data-first="${namedStops[0].kw||namedStops[0].name}" data-last="${namedStops[namedStops.length-1].kw||namedStops[namedStops.length-1].name}">打开当日路线导航（首→末点）</button>`
+      : "";
+
+    el.innerHTML = `
+      <div class="day-head" data-target="day-${idx}">
+        <div class="day-head-left">
+          <div class="day-badge" style="background:${day.color}">${day.date.slice(-2)}</div>
+          <div>
+            <div class="day-date">${day.date} <span style="font-size:12px;color:var(--ink-soft)">${day.weekday}</span></div>
+            <div class="day-city">${day.city}</div>
+          </div>
+        </div>
+        <div class="day-toggle">展开 ▾</div>
+      </div>
+      <div class="day-stops">
+        ${day.stops.map(s=>`
+          <div class="stop">
+            <div class="time">${s.time||""}</div>
+            <div class="content" style="--dot-color:${day.color}">
+              <div class="name">${s.name}${s.book?'<span class="book-flag">需提前订</span>':''}</div>
+              ${s.note?`<div class="note">${s.note}</div>`:""}
+              ${(!s.pending && (s.kw||s.name))?`<a class="stop-navlink" target="_blank" href="${amapSearch(s.kw||s.name)}">导航→</a>`:""}
+            </div>
+          </div>`).join("")}
+        ${multiBtn}
+        <div class="overnight">${day.overnight}</div>
+        ${renderExpenseBox(day.expenses)}
+      </div>
+    `;
+    wrap.appendChild(el);
+  });
+
+  wrap.addEventListener("click", (e)=>{
+    const head = e.target.closest(".day-head");
+    if(head){
+      document.getElementById(head.dataset.target).classList.toggle("open");
+      return;
+    }
+    const btn = e.target.closest(".daymap-btn");
+    if(btn){
+      window.open(amapRoute(btn.dataset.first, btn.dataset.last), "_blank");
+    }
+  });
+}
+renderDays();
+renderSummary();
+</script>
+</body>
+</html>
